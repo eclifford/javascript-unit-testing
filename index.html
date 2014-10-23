@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Unit Testing JavaScript - Eric Clifford</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/night.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Unit Testing</h1>
+					<h3>How to write testable JavaScript</h3>
+					<p>
+						<small>Created by <a href="http://ericclifford.com">Eric Clifford</a> / <a href="http://twitter.com/eclifford">@eclifford</a></small>
+					</p>
+				</section>
+				<section>
+					<img src="images/1791.strip.gif">
+				</section>
+				<section>
+					<h2>Overview</h2>
+					<ul>
+						<li class='fragment'>Why we test software</li>
+						<li class='fragment'>A quick overview of the testing landscape</li>
+						<li class='fragment'>The anatomy of a unit test</li>
+						<li class='fragment'>Patterns / Anti Patterns of unit testable JavaScript</li>
+					</ul>
+					<aside class='notes'>
+						<ul>
+							<li>
+								If you are expecting a lot of code samples and hello world testing stuff then you will be sorely dissapointed
+							</li>
+							<li>
+								Understanding the [context] of why we test is more important than the how. Your mileage on the [how] may vary
+								but if you understand the [why] you can apply/reason about to as how to implement the [how] in your context.
+							</li>
+						</ul>
+					</aside>
+				</section>
+				<section>
+					<h2>Why we test software</h2>
+					<blockquote class='fragment'>
+						"Just because you’ve counted all the trees doesn’t mean you’ve seen the forest."
+					</blockquote>
+				</section>
+				<section>
+					<h2>Software is hard</h2>
+					<img src="images/dummies.jpg">
+				</section>
+				<section>
+					<h2>Most software projects fail</h2>
+					<blockquote class='fragment' cite="http://www.ibmsystemsmag.com/mainframe/tipstechniques/applicationdevelopment/project_pitfalls/?page=1">
+						&ldquo;60-70% of software projects fail&rdquo;
+					</blockquote>
+					<blockquote class='fragment' cite="http://www.ibmsystemsmag.com/mainframe/tipstechniques/applicationdevelopment/project_pitfalls/?page=1">
+						&ldquo;...only about 3% of those can be attributed to technical challenges&rdquo;
+					</blockquote>
+					<aside class="notes">
+						<ul>
+							<li>
+								Failure can come in many forms from a project taking to long, costing more than expected to flat out never launching.
+							</li>
+						</ul>
+					</aside>
+				</section>
+				<section>
+					<h2>What are some of the reasons our projects fail?</h2>
+					<ul>
+						<li class='fragment'>Unrealistic or unarticulated project goals</li>
+						<li class='fragment'>Badly defined system requirements (BDOF or none)</li>
+						<li class='fragment'>Inaccurate estimates of needed resources</li>
+						<li class='fragment'>Poor reporting of a project's status</li>
+						<li class='fragment'>Sloppy development practices</li>
+					</ul>
+				</section>
+				<section>
+					<h2>
+						The Iteration Cycle
+					</h2>
+					<img src="images/feedback.jpg">
+					<aside class='notes'>
+						<ul>
+							<li>
+								Most of our failures come down to latency in the feedback loop. Communication.
+							</li>
+						</ul>
+					</aside>
+				</section>
+				<section>
+					<h2>The Iteration Cycle Explained</h2>
+					<ul>
+						<li class='fragment'>To develop something, we first must understand what we are developing. We unearth a series of functional requirements that match our business requirements.</li>
+						<li class='fragment'>To deliver something, we write code that implements our functional requirements.</li>
+						<li class='fragment'>To evaluate something, we rely on automated or manual testing to prove the requirements have been met.</li>
+						<li class='fragment'>To provide feedback, the stakeholders reflect on current state of software available to them.</li>
+						<li class='fragment'>As the iteration cycle closes, stakeholders assess work delivered in steps 1-4 and evolve requirements where necessary.</li>
+					</ul>
+					<aside class='notes'>
+						<ul>
+							<li>
+								Each iteration cycle is about implied or explict verbal or non verbal communcation.
+							</li>
+							<li>
+								Step through each step of the loop and talk through situations in which each step can break down
+							</li>
+						</ul>
+					</aside>
+				</section>
+				<section>
+					<h2>How does testing affect our feedback loop?</h2>
+					<img class='fragment' src='images/drnick.jpg'>
+					<aside class='notes'>
+						- Talk about the analogy of good, cheap and fast (you can only have two)
+						- The idea that you can choose two of these is kind of misleading because there is an implied amount of quality that is expected by those who are paying for a
+							project.
+						- I propose that in reality quality is a constant (and must remain so in order to perform agile). Only cost/time are actual variances we can control.
+						- Talk about the analogy of cosmetic surgery and how it relates to client services app development at large scale (Dr Nick)
+					</aside>
+				</section>
+				<section>
+					<h2>The cost of poor communication</h2>
+					<ul>
+						<li class='fragment'>Software Entropy</li>
+					</li>
+
+					<aside class="notes">
+						<ul>
+							<li>The feedback loop is there whether we like it or not. We can choose how/when to speed up the process</li>
+							<li>Pychologically things that don't have our immediate attention tend to get depriortized and ignored</li>
+							<li>Entropy equals disorder which equals unpredicability. The knowledge that changing one thing can have unintended conquenquences. Unpredicability in a system
+								manifests itself in an inability to estimate property, assess risk and generally understand the state of a system.</li>
+							<li>Entropy has a direct correlation with the cost/time curve in a long running project. Quick and fast seemed so great at first until you have to maintain it.</li>
+						</ul>
+					</aside>
+				</section>
+				<section>
+					<h2>As developers, how can we improve the feedback loop?</h2>
+					<blockquote class='fragment'>
+						"Those who fail to learn from history are doomed to repeat it." ~ Winston Churchill
+					</blockquote>
+					<aside class="notes">
+						<ul>
+							<li>Almost everything in our profession is about standing on those shoulders of our predecessors.</li>
+						</ul>
+					</aside>
+				</section>
+				<section>
+					<h2>Extreme Programming</h2>
+					<ul>
+						<li class='fragment'>A system of <i>best practices</i> formulated by Kent Beck in 1996, while working on a large payroll redesign at Chrysler.</li>
+					</ul>
+					<img class='fragment' src="images/circles.jpg" alt="extreme programming">
+					<aside class='notes'>
+						TODO: Explain the differences between the circles
+					</aside>
+				</section>
+				<section>
+					<h2>Agile</h2>
+					<ul>
+						<li class='fragment'>
+						Extreme Programming practices are simply developer centric parts of the larger agile methodology.
+					</li>
+					</ul>
+					<img class='fragment' src="images/agilemethods.png" alt="Meny">
+					<aside class='notes'>
+						Its important to point out that this is probably a gross over simplication of the evolution of agile/xp but it
+						is fine for our context.
+					</aside>
+				</section>
+				<section>
+					<h2>Key Principles of XP/Agile</h2>
+					<ul>
+						<li class='fragment'>Code must be written to agreed upon standards (DDD)</li>
+						<li class='fragment'>Welcome changing requirements</li>
+						<li class='fragment'>Technical delivery (velocity) should remain consistent and predicable</li>
+						<li class='fragment'>Deliver working software frequently</li>
+						<li class='fragment'>Working software is the primary measure of success and working software is defined as that which is tested</li>
+					</ul>
+					<aside class='notes'>
+						<ul>
+							<li>
+								The super important piece here is the <b>working software</b>. Working software has been defined and redefined to imply quality proven through testing.
+							</li>
+						</ul>
+					</aside>
+				</section>
+				<section>
+					<h2>Working Software</h2>
+					<img src="images/agile-word-cloud.jpg">
+				</section>
+				<section>
+					<img src="images/yuno.jpg">
+				</section>
+				<section>
+					<h2>Let's talk about tests</h2>
+				</section>
+				<section>
+					<h2>Testing Pyramid</h2>
+					<img src="images/test_pyramid.gif" alt="Meny">
+				</section>
+				<section>
+					<h2>What are Unit Tests?</h2>
+					<ul>
+						<li class='fragment'>A unit test is a piece of code that drives a <i>unit of work</i> and then checks a <i>single assumption</i> about the behavior of that work</li>
+						<li class='fragment'>Must run in isolation from other units</li>
+						<li class='fragment'>Must be fast < 5ms</li>
+						<li class='fragment'>Must produce consistent results regardless of the order the tests were run or the number of times run</li>
+					</ul>
+					<img class='fragment' src="images/unit.png">
+					<p class='fragment'>credit: Sam Hatoum</p>
+				</section>
+				<section>
+					<h2>Isolating a Unit: Test Doubles</h2>
+					<ul>
+						<li class='fragment'>Test doubles come in various forms typically a minimium a Stub and a Mock</li>
+						<li class='fragment'>Stubs wrap existing functions or objects with canned behavior that doesn't call the actual underlying method or object</li>
+						<li class='fragment'>Mocks are stubs with with pre-programmed expectations</li>
+						<li class='fragment'>http://sinonjs.org/</li>
+					</ul>
+					<img class='fragment' src="images/unit_isolation.png">
+					<aside class='notes'>
+						Can use the stunt man analogy
+					</aside>
+				</section>
+				<section>
+					<h2>What are Integration Tests?</h2>
+					<ul>
+						<li class='fragment'>Integration tests confirm that two seperate units can work together by testing the interfaces between them</li>
+					</ul>
+					<img class='fragment' src="images/integration.png">
+				</section>
+				<section>
+					<h2>What are Acceptance Tests?</h2>
+					<ul>
+						<li class='fragment'>Acceptance tests are <i>end to end</i> integration tests that work by automatically "driving" your application from the users point of view</li>
+						<li class='fragment'>Acceptance tests are typically written in BDD style with business functional requirements</li>
+						<li class='fragment'>http://www.cucumberjs.com</li>
+						<li class='fragment'>http://www.nightwatchjs.org</li>
+					</ul>
+					<img class='fragment' src="images/acceptance.png">
+					<aside class='notes'>
+						<p>
+							This is a whole talk by itself. It is important to notice the difference between the acceptance and unit test
+						</p>
+					</aside>
+				</section>
+
+				<!-- Example of nested vertical slides -->
+				<section>
+					<h2>Unit Testing: TDD</h2>
+				</section>
+				<section>
+					<h2>TDD Overview</h2>
+					<img src="images/tdd.jpg" alt="Meny">
+				</section>
+				<section>
+					<h2>Common Misconceptions about TDD</h2>
+					<ul>
+						<li class='fragment'>That unit testing is primarly about fixing or preventing bugs</li>
+						<li class='fragment'>That it doesn't matter if we write the tests before or after we write the code</li>
+						<li class='fragment'>That testing first somehow implies no up front design</li>
+						<li class='fragment'>That testing will be a large time commitment and slow down velocity</li>
+					</ul>
+					<aside class='notes'>
+						<ul>
+							<li>"Software testing proves the existing of bugs not their absence."</li>
+							<li>"Everything should be taken in context. If your trying to introduce testing into a large legacy system where the code is already written then
+								yes it will be large time investment and perhaps not worth it. Otherwise testing saves countless hours/days in the long term."</li>
+						</ul>
+					</aside>
+				</section>
+				<section>
+					<h2>Red</h2>
+					<ul>
+						<li class='fragment'>Implied knowledge of the Domain Model and a list of functional requirements</li>
+						<li class='fragment'>Minimum up front design necessary to write tests that imply the inner workings of your unwritten code based on the functional requirements</li>
+						<li class='fragment'>The writing of a test spec to explore the desired functional behavior</li>
+						<li class='fragment'>The failing test to verify that your functional behavior is not implemented or passing</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Green</h2>
+					<ul>
+						<li class='fragment'>We implement our functional design to make the code pass</li>
+						<li class='fragment'>We reevaulate our design decisions if necessary</li>
+						<li class='fragment'>We avoid making future assumptions about our code KISS/YAGNI</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Refactor</h2>
+					<ul>
+						<li class='fragment'>We look for code smells</li>
+						<li class='fragment'>Removal of code duplication</li>
+						<li class='fragment'>Object, class, module, variable and method names should clearly represent their purpose and use</li>
+						<li class='fragment'>Recognize common patterns and implement the necessary design patterns</li>
+						<li class='fragment'>Rethink any slow running tests (as they are unacceptable)</li>
+						<li class='fragment'>"Premature performance optimization is the root of all evil." ~ Knuth</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Anatomy of a Test Harness</h2>
+					<ul>
+						<li class='fragment'>Test Framework (Mocha, Jasmine, QUnit)</li>
+						<li class='fragment'>Test Runner (Karma, Testem, Mocha CLI, Jasmine CLI/Browser)</li>
+						<li class='fragment'>Assertion Library (Chai)</li>
+						<li class='fragment'>Test Doubles (Sinon)</li>
+					</ul>
+					<aside class='notes'>
+						This is the bare minimum... move quickly through these
+					</aside>
+				</section>
+
+				<section>
+					<h2>Test Framework</h2>
+					<p>
+						Responsible for defining syntax for test spec structuring BDD/TDD.
+					</p>
+					<ul>
+						<li>Mocha</li>
+						<li>Jasmine</li>
+						<li>QUnit</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Test Runner</h2>
+					<p>
+						Responsible for running and displaying results of unit test framework in either CLI or Browser.
+					</p>
+					<ul>
+						<li>Karma</li>
+						<li>Testem</li>
+						<li>Jasmine CLI/Browser</li>
+						<li>Mocha CLI/Browser</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Assertion Library</h2>
+					<p>
+						Responsible for validating input/output in boolean fashion. Typically used to make tests more human readable.
+					</p>
+					<ul>
+						<li>Chai</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Anatomy of a Test Case</h2>
+					<div data-markdown class='fragment'>
+```
+// implied setup
+it("human readable functional requirement", function() {
+	// explicit setup
+	// execute unit under test
+	// one or more assertions
+	// explicit teardown
+});
+// implied teardown
+```
+				</div>
+				<ul>
+					<li class='fragment'>an implied or explicit setup</li>
+					<li class='fragment'>an explict execution</li>
+					<li class='fragment'>one or more assertions</li>
+					<li class='fragment'>an implied or explicit teardown</li>
+				</ul>
+				</section>
+				<section>
+					<h2>Anatomy of a Test Suite</h2>
+					<ul>
+						<li class='fragment'>
+						A testing suite is a series of test cases that when run together, confirm the validity of a piece of software
+						under test
+					</li>
+					<li class='fragment'>Typically provides grouping context (BDD) and helper methods for setup/teardown for groups of test cases</li>
+					</ul>
+					<div data-markdown class='fragment'>
+```
+describe("foo", function() {
+	before(function() {
+		// setup test case
+	});
+	after(function() {
+		// teardown test case
+	});
+	it("human readable functional requirement", function() {
+	});
+	it("human readable functional requirement", function() {
+	});
+	it("human readable functional requirement", function() {
+	});
+	it("human readable functional requirement", function() {
+	});
+});
+```
+			</div>
+				</section>
+				<section>
+					<h2>Examples</h2>
+					<div data-markdown class='fragment'>
+```
+describe("getClosestSupportedWidth()", function() {
+  it("should throw on invalid parameters", function() {
+    expect(function() {
+      Responsify.getClosestSupportedWidth('a');
+    }).to.throw;
+    expect(function() {
+      Responsify.getClosestSupportedWidth();
+    }).to.throw;
+  });
+  it("should calculate closest supported width if supportedWidths is set", function() {
+    Responsify.options.supportedWidths = [100, 500, 1000];
+    var width = Responsify.getClosestSupportedWidth(777);
+    expect(width).to.equal(1000);
+  });
+  it("should return provided width if no explicit supportedWidths are set", function() {
+    Responsify.options.supportedWidths = [];
+    var width = Responsify.getClosestSupportedWidth(777);
+    expect(width).to.equal(777);
+  });
+});
+```
+				</div>
+				</section>
+
+				<section>
+					<h2>Writing Testable JavaScript</h2>
+				</section>
+				<section>
+					<h2>Your primary benefit in writing tests is not the tests themselves, but in the act of writing code that can be tested</h2>
+					<ul>
+						<li class="fragment">We want to validate our initial design decisions</li>
+						<li class="fragment">We want to prove that our code delivers the desired functionality</li>
+						<li class="fragment">We want to assess that our code is malleable to change</li>
+						<li class="fragment">We want to confirm that our code is isolatable</li>
+					</ul>
+				</section>
+				<section>
+					<h2>The Single Responsibility Principle is a key tenant to writing testable code</h2>
+					<p class='fragment'>The SRP states that a given context (class, function, variable) should have a <i>single responsbility</i>; that responsibility is defined
+						as a single <i>reason to change</i></p>
+				</section>
+				<section>
+					<h2>Common Opportunites for Responsibility Change</h2>
+					<ul>
+						<li class='framework'>Calculation</li>
+						<li class='framework'>Mutation</li>
+						<li class='framework'>Configuration</li>
+						<li class='framework'>Communication</li>
+						<li class='framework'>Presentation</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Exersize: FizzBuzz</h2>
+					<p>
+						Write a program that prints the numbers from 1 to 100. But for multiples of three print FizzBuzz instead
+						of the number and for the multiples of five print Buzz. For numbers that are multiples of both three and five print FizzBuzz.
+					</p>
+				</section>
+				<section>
+					<h2>FizzBuzz: Simple Solution</h2>
+					<div data-markdown class='fragment'>
+```
+var FizzBuzz = (function() {
+	return {
+		run: function() {
+			for (var i = 1; i <= 100; i++) {
+				if (i % 3 === 0 && i % 5 === 0) {
+					console.log("FizzBuzz");
+				} else if (i % 3 === 0) {
+					console.log("Fizz");
+				} else if (i % 5 === 0) {
+					console.log("Buzz");
+				} else {
+					console.log(i);
+				}
+			}
+		}
+	};
+})();
+```
+						</div>
+				</section>
+				<section>
+					<h2>Testing FizzBuzz: First Try</h2>
+					<div data-markdown class='fragment'>
+```
+describe("FizzBuzz", function() {
+	it("should return FizzBuzz for numbers that are multiples of 3 and 5", function() {
+		FizzBuzz.run(); // presentation and calculation are combined
+		// ??
+	});
+	it("should return Fizz for numbers that are multiples of 3", function() {
+		// ??
+	});
+	it("should return Buzz for numbers that are multiples of 5", function() {
+		// ??
+	});
+});
+```
+					</div>
+				</section>
+				<section>
+					<h2>FizzBuzz: A Better Solution</h2>
+					<div data-markdown class='fragment'>
+```
+var FizzBuzz = (function() {
+	return {
+		// presentation
+		print: function() {
+			for (var i = 1; i <= 100; i++) {
+				console.log(this.calcuateFizzBuzz(i));
+			}
+		},
+		// calculation
+		calculate: function(num) {
+			if (num % 3 === 0 && num % 5 === 0) {
+				return "FizzBuzz";
+			} else if (num % 3 === 0) {
+				return "Fizz";
+			} else if (num % 5 === 0) {
+				return "Buzz";
+			} else {
+				return num.toString();
+			}
+		}
+	};
+})();
+```
+					</div>
+				</section>
+				<section>
+					<h2>Testing FizzBuzz: Second Try</h2>
+					<div data-markdown class='fragment'>
+```
+describe("FizzBuzz", function() {
+	it("should return FizzBuzz for numbers that are multiples of 3 and 5", function() {
+		var value1 = FizzBuzz.calculate(15);
+		var value2 = FizzBuzz.calculate(30);
+
+		expect(value1).to.equal("FizzBuzz");
+		expect(value2).to.equal("FizzBuzz");
+	});
+	it("should return Fizz for numbers that are multiples of 3", function() {
+		var value1 = FizzBuzz.calculate(3);
+		var value2 = FizzBuzz.calculate(9);
+
+		expect(value1).to.equal("Fizz");
+		expect(value2).to.equal("Fizz");
+	});
+	it("should return Buzz for numbers that are multiples of 5", function() {
+		var value1 = FizzBuzz.calculate(5);
+		var value2 = FizzBuzz.calculate(10);
+
+		expect(value1).to.equal("Buzz");
+		expect(value2).to.equal("Buzz");
+	});
+});
+```
+					</div>
+				</section>
+				<section>
+					<h2>FizzBuzz: An Even Better Solution</h2>
+					<div data-markdown class='fragment'>
+```
+var FizzBuzz = (function() {
+	return {
+		// configuration (workflow)
+		run: function() {
+			for(var i = 1; i < 100; i++) {
+				this.print(this.calculateFizzBuzz(i));
+			}
+		},
+		// presentation
+		print: function(str) {
+			console.log(str);
+		},
+		// calculation
+		calculateFizzBuzz: function(num) {
+			if (num % 3 === 0 && num % 5 === 0) {
+				return "FizzBuzz";
+			} else if (num % 3 === 0) {
+				return "Fizz";
+			} else if (num % 5 === 0) {
+				return "Buzz";
+			} else {
+				return num.toString();
+			}
+		}
+	};
+})();
+```
+				</div>
+				</section>
+				<section>
+					<h2>Unit Testing Best Practices</h2>
+				</section>
+				<section>
+					<h2>Test within your boundries. Don't test libraries you don't control.</h2>
+					<ul>
+						<li class='fragment'>Avoid unit testing the DOM</li>
+						<li class='fragment'>Don't test 3rd party libraries you don't control; assume they are already tested (jQuery, Backbone, etc)</li>
+						<li class='fragment'>Test UI behavior at the acceptance level not at the unit level</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Each method under test should have defined inputs and outputs</h2>
+					<ul>
+						<li class='fragment'>
+						To make code testable, we must eliminate implicit environmental configuration
+					</li>
+					<li class='fragment'>
+						A function should have a predictable output based on its input
+					</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Automation is Important</h2>
+					<blockquote class='fragment'>
+						"Imperfect tests, run frequently, are much better than perfect tests that are never written at all." ~ Martin Fowler
+					</blockquote>
+				</section>
+				<section>
+					<h2>Happy Path</h2>
+					<ul>
+						<li class='fragment'>Don't always test the happy path. It's often important to test both passing and failing conditions, as well as exception handling.</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Run Test Cases in Isolation</h2>
+					<ul>
+						<li class='fragment'>To avoid test specific race conditions or global variable leakage affecting your tests, run them with the `.only` flag in Mocha</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Async Testing</h2>
+					<ul>
+						<li>When testing async functionality, it's important to reduce the latency of the callback to the next turn through the event loop</li>
+						<li>Fake time by using Sinons fake timers</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Favor Pragmatism over Dogmatism</h2>
+					<ul>
+						<li class='fragment'>Pragmatism implies an educated implementation of theories or beliefs put into practical application</li>
+						<li class='fragment'>Dogmatism implies sticking to theoretical beliefs or theories without considering practicality</li>
+					</ul>
+					<aside class='notes'>
+						<li>
+							Understanding the [context] of why we test is infinintely more important than the how. Your mileage on the [how] may vary
+							but if you understand the [why] you can apply/reason about to as how to implement the [how] in your context.
+						</li>
+					</aside>
+				</section>
+				<section>
+					<h2>Public Examples</h2>
+					<ul>
+						<li class='fragment'>http://www.github.com/eclifford/responsify</li>
+						<li class='fragment'>http://www.github.com/eclifford/logr</li>
+					</ul>
+
+				</section>
+
+				<section>
+					<h1>THE END</h1>
+					<h3>by Eric Clifford</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
